@@ -1,0 +1,22 @@
+{
+  "name": "chesscom-clone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A chess.com-like multiplayer chess platform (Next.js + Node + Socket.io + Prisma)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm -w @chess/server run dev",
+    "dev:web": "npm -w @chess/web run dev",
+    "build": "npm -w @chess/server run build && npm -w @chess/web run build",
+    "db:migrate": "npm -w @chess/server run db:migrate",
+    "db:generate": "npm -w @chess/server run db:generate",
+    "db:seed": "npm -w @chess/server run db:seed",
+    "start": "concurrently -n server,web -c blue,green \"npm -w @chess/server run start\" \"npm -w @chess/web run start\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  rating       Int      @default(1200)
+  wins         Int      @default(0)
+  losses       Int      @default(0)
+  draws        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  gamesAsWhite Game[] @relation("WhiteGames")
+  gamesAsBlack Game[] @relation("BlackGames")
+
+  @@index([rating])
+}
+
+enum GameStatus {
+  ACTIVE
+  FINISHED
+  ABORTED
+}
+
+enum GameResult {
+  WHITE_WIN
+  BLACK_WIN
+  DRAW
+}
+
+model Game {
+  id           String      @id @default(cuid())
+  whiteId      String?
+  blackId      String?
+  white        User?       @relation("WhiteGames", fields: [whiteId], references: [id])
+  black        User?       @relation("BlackGames", fields: [blackId], references: [id])
+
+  status       GameStatus  @default(ACTIVE)
+  result       GameResult?
+  // How the game ended: checkmate, resignation, timeout, stalemate, agreement, etc.
+  endReason    String?
+
+  // Final / current FEN and the full SAN move list (space-separated)
+  fen          String      @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  pgnMoves     String      @default("")
+
+  // Time control
+  initialTime  Int // seconds on the clock at game start
+  increment    Int // seconds added per move
+
+  // Elo bookkeeping
+  whiteRatingBefore Int?
+  blackRatingBefore Int?
+  whiteRatingAfter  Int?
+  blackRatingAfter  Int?
+
+  createdAt    DateTime @default(now())
+  finishedAt   DateTime?
+
+  @@index([status])
+  @@index([whiteId])
+  @@index([blackId])
+}
