@@ -4,6 +4,10 @@ const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      screens: {
+        // Extra-small breakpoint for narrow phones.
+        xs: "420px",
+      },
       colors: {
         board: {
           light: "#ebecd0",

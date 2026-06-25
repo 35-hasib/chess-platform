@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { Navbar } from "@/components/Navbar";
@@ -6,6 +6,15 @@ import { Navbar } from "@/components/Navbar";
 export const metadata: Metadata = {
   title: "ChessPlatform — Play Chess Online",
   description: "Play real-time chess online. Matchmaking, ratings, and more.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Allow pinch-zoom but stop the board drag from triggering scroll/zoom.
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#262421",
 };
 
 export default function RootLayout({

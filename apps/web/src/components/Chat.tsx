@@ -11,10 +11,13 @@ interface Props {
 
 export function Chat({ messages, onSend, disabled }: Props) {
   const [text, setText] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Scroll inside the message list only — scrollIntoView() would jump the
+  // whole page on mobile (the chat sits below the board).
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   function submit(e: React.FormEvent) {
@@ -27,7 +30,10 @@ export function Chat({ messages, onSend, disabled }: Props) {
 
   return (
     <div className="flex flex-col bg-panel rounded-md h-48">
-      <div className="flex-1 overflow-y-auto scroll-thin p-2 space-y-1 text-sm">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto scroll-thin p-2 space-y-1 text-sm"
+      >
         {messages.length === 0 ? (
           <p className="text-gray-500 text-xs text-center py-4">
             Say hello to your opponent 👋
@@ -40,7 +46,6 @@ export function Chat({ messages, onSend, disabled }: Props) {
             </div>
           ))
         )}
-        <div ref={endRef} />
       </div>
       <form onSubmit={submit} className="p-2 border-t border-panel-lighter flex gap-2">
         <input

@@ -11,10 +11,14 @@ interface Props {
 
 /** Renders SAN moves in paired rows (white / black). */
 export function MoveList({ moves, currentPly = null, onSelectPly }: Props) {
-  const endRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Keep the latest move in view by scrolling *inside* the list only.
+  // scrollIntoView() would scroll the whole page (on mobile the list sits
+  // below the board), making the screen jump down after every move.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [moves.length]);
 
   const rows: { num: number; white?: string; black?: string }[] = [];
@@ -42,7 +46,10 @@ export function MoveList({ moves, currentPly = null, onSelectPly }: Props) {
   };
 
   return (
-    <div className="bg-panel rounded-md overflow-y-auto scroll-thin max-h-64 text-sm">
+    <div
+      ref={containerRef}
+      className="bg-panel rounded-md overflow-y-auto scroll-thin max-h-64 text-sm"
+    >
       {rows.length === 0 ? (
         <p className="text-gray-500 text-center py-4 text-xs">No moves yet</p>
       ) : (
@@ -59,7 +66,6 @@ export function MoveList({ moves, currentPly = null, onSelectPly }: Props) {
           </div>
         ))
       )}
-      <div ref={endRef} />
     </div>
   );
 }

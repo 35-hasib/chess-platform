@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Chess, type Square } from "chess.js";
 import type { Color } from "@/lib/types";
@@ -44,6 +44,34 @@ export function Board({
   } | null>(null);
 
   const game = useMemo(() => new Chess(fen), [fen]);
+
+  // While a piece is being dragged on a touch device, the browser would
+  // otherwise treat the finger movement as a page scroll/pan (the board
+  // "scrolls down" mid-move). react-chessboard's touch backend does not call
+  // preventDefault, and React's onTouchMove is registered as a passive
+  // listener (which can't preventDefault), so we attach a non-passive one
+  // directly to the board wrapper and block the default only while dragging.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const onTouchMove = (e: TouchEvent) => {
+      if (draggingRef.current) e.preventDefault();
+    };
+    const onTouchEnd = () => {
+      draggingRef.current = false;
+    };
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+    el.addEventListener("touchcancel", onTouchEnd);
+    return () => {
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, []);
 
   const turn = game.turn();
   const myTurn = interactive && yourColor === turn;
@@ -128,12 +156,18 @@ export function Board({
   }
 
   return (
-    <div className="relative w-full">
+    <div ref={wrapRef} className="board-touch relative w-full">
       <Chessboard
         position={fen}
         boardOrientation={orientation}
         onPieceDrop={onPieceDrop}
         onSquareClick={onSquareClick}
+        onPieceDragBegin={() => {
+          draggingRef.current = true;
+        }}
+        onPieceDragEnd={() => {
+          draggingRef.current = false;
+        }}
         arePiecesDraggable={myTurn}
         customSquareStyles={{ ...lastMoveStyles, ...optionSquares }}
         customBoardStyle={{
